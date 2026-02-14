@@ -1,0 +1,11 @@
+# Large dataset
+data/raw_data.csv
+
+# Python cache
+__pycache__/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
