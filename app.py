@@ -94,7 +94,7 @@ def user_input_features():
         if colname in feature_cols:
             input_data[colname] = 1 if carrier == c else 0
 
-    return pd.DataFrame([input_data])
+    return pd.DataFrame([input_data]), dep_period, carrier
 
 # Auto-fill button
 if 'autofill' not in st.session_state:
@@ -102,12 +102,13 @@ if 'autofill' not in st.session_state:
 if st.button('Auto-fill Example'):
     st.session_state['autofill'] = True
 
+
 if st.session_state['autofill']:
     # Use example values
-    input_df = user_input_features()
+    input_df, dep_period, carrier = user_input_features()
     st.session_state['autofill'] = False
 else:
-    input_df = user_input_features()
+    input_df, dep_period, carrier = user_input_features()
 input_df = input_df.astype(float)
 
 if st.button("Predict"):
@@ -134,3 +135,29 @@ if st.button("Predict"):
     st.markdown(f"**Probability of Operational Risk:** {proba:.2%}")
     st.markdown(f"**Interpretation:** {advice}")
     st.markdown(f"**Predicted Class:** {'Operational Risk' if pred == 1 else 'No Risk'}")
+
+    # --- RAG Integration ---
+    if risk_level != 'Low Risk':
+        st.markdown("---")
+        try:
+            from gemini_rag import generate_rag_explanation
+            # Only send flight features to LLM
+            feature_context = "\n".join([
+                f"Quarter: {input_df['QUARTER'][0]}",
+                f"Month: {input_df['MONTH'][0]}",
+                f"Day of Week: {input_df['DAY_OF_WEEK'][0]}",
+                f"Departure Hour: {input_df['DEP_HOUR'][0]}",
+                f"Origin Airport ID: {input_df['ORIGIN_AIRPORT_ID'][0]}",
+                f"Destination Airport ID: {input_df['DEST_AIRPORT_ID'][0]}",
+                f"Distance: {input_df['DISTANCE'][0]}",
+                f"Expected Taxi Time: {input_df['EXPECTED_TAXI_TIME'][0]}",
+                f"Departure Period: {dep_period}",
+                f"Marketing Carrier: {carrier}"
+            ])
+            user_query = f"Given the above input and prediction probability {proba:.2%}, what are the main operational risk factors and recommendations?"
+            with st.spinner("Generating operational recommendation..."):
+                explanation = generate_rag_explanation(user_query, feature_context)
+            st.markdown("#### Operational Recommendation")
+            st.success(explanation)
+        except Exception as e:
+            st.warning(f"Operational recommendation unavailable: {e}")
