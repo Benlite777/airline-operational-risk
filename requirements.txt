@@ -10,3 +10,4 @@ imblearn
 joblib
 streamlit
 pathlib
+altair==4.2.2
