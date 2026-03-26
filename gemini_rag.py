@@ -38,7 +38,7 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
 
         # Custom static logic for NAS and Carrier delays
         if taxi_time is not None:
-            if taxi_time > 70:
+            if taxi_time > 34:
                 return (
                     "Most Likely Delay: Carrier\n" 
                     "Justification: Slight delays in inbound aircraft and turnaround processes indicate a potential carrier delay risk.  \n"
