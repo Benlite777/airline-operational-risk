@@ -20,6 +20,8 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
         LLM-generated explanation string.
     """
     headers = {"Content-Type": "application/json"}
+    # DEBUG: Print the API key (masking most of it for safety)
+    print(f"[DEBUG] GEMINI_API_KEY loaded: {str(GEMINI_API_KEY)[:6]}...{str(GEMINI_API_KEY)[-4:]}")
     payload = {
         "contents": [
             {"parts": [
