@@ -2,12 +2,10 @@ import requests
 import os
 from typing import List, Dict, Any
 
-# Try to load GEMINI_API_KEY from Streamlit secrets, fallback to environment variable
-try:
-    import streamlit as st
-    GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-except ImportError:
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Load GEMINI_API_KEY only from Streamlit secrets
+import streamlit as st
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
 def generate_rag_explanation(user_query: str, context: str) -> str:
