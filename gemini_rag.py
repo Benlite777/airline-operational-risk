@@ -48,7 +48,7 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
                 return (
                   "Most Likely Delay: NAS\n"
                   "Justification: High outbound traffic and ATC-imposed flow control suggest a likely NAS delay.  \n"
-                  "How to Reduce: Plan for flexible departure timing. Align with ATC instructions to minimize ground holding.""
+                  "How to Reduce: Plan for flexible departure timing. Align with ATC instructions to minimize ground holding."
                 )
 
         response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=payload)
