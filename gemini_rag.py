@@ -29,6 +29,28 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
     }
     params = {"key": GEMINI_API_KEY}
     try:
+        # Extract Expected Taxi Time from context if possible
+        import re
+        taxi_time = None
+        match = re.search(r"Expected Taxi Time: (\d+)", context)
+        if match:
+            taxi_time = int(match.group(1))
+
+        # Custom static logic for NAS and Carrier delays
+        if taxi_time is not None:
+            if taxi_time > 70:
+                return (
+                    "Most Likely Delay: Carrier\n"
+                    "Justification: Minor operational inefficiencies and turnaround dependencies suggest a potential carrier delay.\n"
+                    "How to Reduce: Improve turnaround coordination. Ensure crew and aircraft readiness before scheduled departure."
+                )
+            elif taxi_time > 25:
+                return (
+                    "Most Likely Delay: NAS\n"
+                    "Justification: Moderate congestion and airspace flow constraints indicate possible NAS delays.\n"
+                    "How to Reduce: Adjust departure slot planning. Coordinate with ATC for optimized routing."
+                )
+
         response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=payload)
         if response.status_code == 200:
             data = response.json()
@@ -37,24 +59,30 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
             except Exception:
                 # Fallback to static message if parsing fails
                 return (
-                    "Most Likely Delay: None. Justification: There is no problem, risk is low and it is good that operations are running smoothly. "
-                    "How to Reduce: Continue monitoring operations and maintain current best practices."
+                    f"Most Likely Delay: Unable to determine from current data.\n"
+                    f"Justification: The system could not retrieve a specific recommendation at this time.\n"
+                    f"Context Provided: {context[:200]}...\n"
+                    f"User Query: {user_query}\n"
+                    "How to Reduce: Review operational data for anomalies, consult with the operations team, and ensure all standard procedures are followed."
                 )
         else:
-            # Diagnostic printout for debugging
             print("Gemini API error details:")
             print("Status Code:", response.status_code)
             print("Response Text:", response.text)
-            # Fallback to static message if API call fails
             return (
-                "Most Likely Delay: None. Justification: There is no problem, risk is low and it is good that operations are running smoothly. "
-                "How to Reduce: Continue monitoring operations and maintain current best practices."
+                f"Most Likely Delay: Unable to determine from current data.\n"
+                f"Justification: The system could not retrieve a specific recommendation at this time.\n"
+                f"Context Provided: {context[:200]}...\n"
+                f"User Query: {user_query}\n"
+                "How to Reduce: Review operational data for anomalies, consult with the operations team, and ensure all standard procedures are followed."
             )
     except Exception as e:
-        # Fallback to static message if request fails
         return (
-            "Most Likely Delay: None. Justification: There is no problem, risk is low and it is good that operations are running smoothly. "
-            "How to Reduce: Continue monitoring operations and maintain current best practices."
+            f"Most Likely Delay: Unable to determine from current data.\n"
+            f"Justification: The system could not retrieve a specific recommendation at this time.\n"
+            f"Context Provided: {context[:200]}...\n"
+            f"User Query: {user_query}\n"
+            "How to Reduce: Review operational data for anomalies, consult with the operations team, and ensure all standard procedures are followed."
         )
 
 
