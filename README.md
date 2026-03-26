@@ -1,5 +1,9 @@
 # Airline Operational Risk Dashboard
 
+## Live Demo
+
+[Access the Airline Operational Risk Prediction](https://airline-operational-risk-9vbbuxpundo9go2iv9jt8n.streamlit.app/)
+
 This project is an interactive dashboard and backend system for predicting and explaining operational risks in airline flights. It leverages machine learning, retrieval-augmented generation (RAG) with Gemini LLM, and a custom Streamlit UI to provide actionable insights for airline operations analysts.
 
 ## Features
