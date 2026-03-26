@@ -40,15 +40,15 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
         if taxi_time is not None:
             if taxi_time > 70:
                 return (
-                    "Most Likely Delay: Carrier\n"
-                    "Justification: Minor operational inefficiencies and turnaround dependencies suggest a potential carrier delay.\n"
-                    "How to Reduce: Improve turnaround coordination. Ensure crew and aircraft readiness before scheduled departure."
+                    "Most Likely Delay: Carrier\n" 
+                    "Justification: Slight delays in inbound aircraft and turnaround processes indicate a potential carrier delay risk.  \n"
+                    "How to Reduce: Expedite ground handling activities. Ensure crew and aircraft are ready before departure."
                 )
-            elif taxi_time > 25:
+            elif taxi_time > 19:
                 return (
-                    "Most Likely Delay: NAS\n"
-                    "Justification: Moderate congestion and airspace flow constraints indicate possible NAS delays.\n"
-                    "How to Reduce: Adjust departure slot planning. Coordinate with ATC for optimized routing."
+                  "Most Likely Delay: NAS\n"
+                  "Justification: High outbound traffic and ATC-imposed flow control suggest a likely NAS delay.  \n"
+                  "How to Reduce: Plan for flexible departure timing. Align with ATC instructions to minimize ground holding.""
                 )
 
         response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=payload)
