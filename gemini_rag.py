@@ -2,7 +2,7 @@ import requests
 import os
 from typing import List, Dict, Any
 
-GEMINI_API_KEY = "AIzaSyDsxLCWAqTl7JC3zPBvRo1rbqJiBkGeXCc"  
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
 def generate_rag_explanation(user_query: str, context: str) -> str:
     """
@@ -17,7 +17,7 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
     payload = {
         "contents": [
             {"parts": [
-                {"text": f"Context:\n{context}\n\nUser Query: {user_query}\n\nYou are an airline operations analyst. Based on the given flight pre-departure data, select ONLY the most likely delay type (carrier, weather, NAS, or security) IF there is clear evidence for it. Otherwise, say 'No specific delay type evident.' For your choice, justify it in one short sentence. Then give 1-2 very short, practical steps to reduce that delay. Output format:\n\nMost Likely Delay: <type>\nJustification: <one short sentence>\nHow to Reduce: <step 1>. <step 2>."}
+                {"text": f"Context:\n{context}\n\nUser Query: {user_query}\n\nYou are an airline operations analyst. Based on the given flight pre-departure data, select ONLY the most likely delay type (carrier, weather, NAS, or security) IF there is clear evidence for it. If there is no specific delay type evident and the risk is low, reply with: 'Most Likely Delay: None. Justification: There is no problem, risk is low and it is good that operations are running smoothly.' Otherwise, say 'No specific delay type evident.' For your choice, justify it in one short sentence. Then give 1-2 very short, practical steps to reduce that delay. Output format:\n\nMost Likely Delay: <type>\nJustification: <one short sentence>\nHow to Reduce: <step 1>. <step 2>."}
             ]}
         ]
     }
