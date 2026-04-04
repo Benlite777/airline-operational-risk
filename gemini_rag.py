@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 import streamlit as st
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
 
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 def generate_rag_explanation(user_query: str, context: str) -> str:
     """
     Calls Gemini API with user query and retrieved context to generate an explanation.
@@ -29,54 +29,64 @@ def generate_rag_explanation(user_query: str, context: str) -> str:
     }
     params = {"key": GEMINI_API_KEY}
     try:
-        # Extract Expected Taxi Time from context if possible
-        import re
-        taxi_time = None
-        match = re.search(r"Expected Taxi Time: (\d+)", context)
-        if match:
-            taxi_time = int(match.group(1))
-
-        # Custom static logic for NAS and Carrier delays
-        if taxi_time is not None:
-            if taxi_time > 34:
-                return (
-                    "Most Likely Delay: Carrier\n" 
-                    "Justification: Slight delays in inbound aircraft and turnaround processes indicate a potential carrier delay risk.  \n"
-                    "How to Reduce: Expedite ground handling activities. Ensure crew and aircraft are ready before departure."
-                )
-            elif taxi_time > 19:
-                return (
-                  "Most Likely Delay: NAS\n"
-                  "Justification: High outbound traffic and ATC-imposed flow control suggest a likely NAS delay.  \n"
-                  "How to Reduce: Plan for flexible departure timing. Align with ATC instructions to minimize ground holding."
-                )
-
         response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=payload)
         if response.status_code == 200:
             data = response.json()
             try:
                 return data["candidates"][0]["content"]["parts"][0]["text"]
             except Exception:
-                # Fallback to static message if parsing fails
-                return (
-                    f"Most Likely Delay: Unable to determine from current data.\n"
-                    f"Justification: The system could not retrieve a specific recommendation at this time.\n"
-                    f"Context Provided: {context[:200]}...\n"
-                    f"User Query: {user_query}\n"
-                    "How to Reduce: Review operational data for anomalies, consult with the operations team, and ensure all standard procedures are followed."
-                )
+                pass  # Fallback to static logic below
         else:
             print("Gemini API error details:")
             print("Status Code:", response.status_code)
             print("Response Text:", response.text)
-            return (
-                f"Most Likely Delay: Unable to determine from current data.\n"
-                f"Justification: The system could not retrieve a specific recommendation at this time.\n"
-                f"Context Provided: {context[:200]}...\n"
-                f"User Query: {user_query}\n"
-                "How to Reduce: Review operational data for anomalies, consult with the operations team, and ensure all standard procedures are followed."
-            )
+        # If Gemini fails or parsing fails, use static logic below
+        import re
+        taxi_time = None
+        match = re.search(r"Expected Taxi Time: (\d+)", context)
+        if match:
+            taxi_time = int(match.group(1))
+        if taxi_time is not None:
+            if taxi_time > 34:
+                return (
+                    "Most Likely Delay: Carrier\n"
+                    "Justification: Slight delays in inbound aircraft and turnaround processes indicate a potential carrier delay risk.  \n"
+                    "How to Reduce: Expedite ground handling activities. Ensure crew and aircraft are ready before departure."
+                )
+            elif taxi_time > 19:
+                return (
+                    "Most Likely Delay: NAS\n"
+                    "Justification: High outbound traffic and ATC-imposed flow control suggest a likely NAS delay.  \n"
+                    "How to Reduce: Plan for flexible departure timing. Align with ATC instructions to minimize ground holding."
+                )
+        # Final fallback
+        return (
+            f"Most Likely Delay: Unable to determine from current data.\n"
+            f"Justification: The system could not retrieve a specific recommendation at this time.\n"
+            f"Context Provided: {context[:200]}...\n"
+            f"User Query: {user_query}\n"
+            "How to Reduce: Review operational data for anomalies, consult with the operations team, and ensure all standard procedures are followed."
+        )
     except Exception as e:
+        # If an exception occurs, use static logic as fallback
+        import re
+        taxi_time = None
+        match = re.search(r"Expected Taxi Time: (\d+)", context)
+        if match:
+            taxi_time = int(match.group(1))
+        if taxi_time is not None:
+            if taxi_time > 34:
+                return (
+                    "Most Likely Delay: Carrier\n"
+                    "Justification: Slight delays in inbound aircraft and turnaround processes indicate a potential carrier delay risk.  \n"
+                    "How to Reduce: Expedite ground handling activities. Ensure crew and aircraft are ready before departure."
+                )
+            elif taxi_time > 19:
+                return (
+                    "Most Likely Delay: NAS\n"
+                    "Justification: High outbound traffic and ATC-imposed flow control suggest a likely NAS delay.  \n"
+                    "How to Reduce: Plan for flexible departure timing. Align with ATC instructions to minimize ground holding."
+                )
         return (
             f"Most Likely Delay: Unable to determine from current data.\n"
             f"Justification: The system could not retrieve a specific recommendation at this time.\n"
